@@ -6,7 +6,7 @@ import numpy
 
 #pt.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
-src_path = 'DDD/'
+src_path = 'data/'
 
 
 def main():
@@ -19,8 +19,8 @@ def main():
         for s in sub1:
             array = numpy.asarray(sub2)
             rev = list(reversed(array))
-            res = cv.multiply(s,rev[i])
-            compare_results(seq[i],res)
+            res = cv.multiply(s, rev[i])
+            compare_results(seq[i], res)
             i += 1
 
 
@@ -31,7 +31,7 @@ def create_all_sequences():
     while(True):
         seq, rest_img = create_sequence(rest_img)
         all_seq.append(seq)
-        if len(rest_img)== 0:
+        if len(rest_img) == 0:
             break
     return all_seq
 
@@ -57,16 +57,17 @@ def create_sequence(images):
 
 
 def bg_subtraction(seq):
-    fgbg = cv.createBackgroundSubtractorMOG2(len(seq),32)
-    kernels = [numpy.ones((7,7), numpy.uint8) ,numpy.ones((5,5), numpy.uint8),numpy.ones((3,3), numpy.uint8)]
+    fgbg = cv.createBackgroundSubtractorMOG2(len(seq), 32)
+    kernels = [numpy.ones((7, 7), numpy.uint8), numpy.ones(
+        (5, 5), numpy.uint8), numpy.ones((3, 3), numpy.uint8)]
     bg_subtracted = []
     old_close = None
     for img_str in seq:
-        img = cv.imread(src_path+img_str,0)
+        img = cv.imread(src_path+img_str, 0)
         blur = cv.GaussianBlur(img, (5, 5), 0)
         equ = cv.equalizeHist(blur)
         fg = fgbg.apply(equ)
-        for k  in kernels:
+        for k in kernels:
             open = cv.morphologyEx(fg, cv.MORPH_OPEN, k)
             close = cv.morphologyEx(open, cv.MORPH_CLOSE, k)
             if old_close is None:
@@ -78,7 +79,7 @@ def bg_subtraction(seq):
             close = old_close
 
         old_close = close
-        res = color_filter(img_str,close)
+        res = color_filter(img_str, close)
         bg_subtracted.append(res)
     return bg_subtracted
 
@@ -102,9 +103,9 @@ def compare_results(img_str, detected):
     img = cv.imread(src_path + img_str)
     red_det = cv.cvtColor(detected, cv.COLOR_GRAY2BGR)
     img_rgb = numpy.zeros_like(img, numpy.uint8)
-    img_rgb[:,:,2] = 255
-    red_thresh = cv.multiply(red_det,img_rgb)
-    comparison = cv.addWeighted(img,0.7,red_thresh,0.3,0)
+    img_rgb[:, :, 2] = 255
+    red_thresh = cv.multiply(red_det, img_rgb)
+    comparison = cv.addWeighted(img, 0.7, red_thresh, 0.3, 0)
     show_image(comparison)
 
 
@@ -115,7 +116,6 @@ def show_image(img):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
+
 if __name__ == "__main__":
     main()
-
-
